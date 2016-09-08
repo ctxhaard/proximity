@@ -1,0 +1,37 @@
+
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2708";
+
+	fragment@0 {
+		target = <&gpio>;
+		__overlay__ {
+			hcsr04_pins: hcsr04_pins {
+				brcm,pins =    <23 24>;   // trigger, echo
+				brcm,function = <1 0>;    // out,  in
+				brcm,pull =     <0 0>;      // none
+				status = "okay";
+			};
+		};
+	};
+
+	fragment@1 {
+		target-path = "/soc";
+		__overlay__ {
+			hcsr04: hcsr04 {
+				compatible = "hcsr04";
+				pinctrl-names = "default";
+				pinctrl-0 = <&hcsr04_pins>;
+				// see Documentation/gpio/board.txt
+				proximity-gpios = <&gpio 23 0>, // trigger
+						  <&gpio 24 0>; // echo
+				status="okay";
+			};
+			
+		};
+	};
+
+};
+

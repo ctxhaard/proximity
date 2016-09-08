@@ -1,0 +1,9 @@
+comment "Proximity sensor drivers"
+
+config HCSR04
+	tristate "Support for HC-SR04 Proximity Ultrasound Sensor"
+	default m
+	depends on GPIOLIB
+	help
+	  This option enables support for HC-SR04 Proximity Ultrasound Sensor.
+

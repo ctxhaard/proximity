@@ -33,7 +33,7 @@
 #include <asm/uaccess.h> // < copy from user
 #include <linux/cdev.h>  // < character device
 #include <linux/workqueue.h>
-#include  <linux/completion.h>
+#include <linux/completion.h>
 #include <linux/ktime.h>
 #include <linux/time64.h>
 
@@ -45,7 +45,12 @@
 
 #define SAMPLING_INTERVAL_JIFFIES (HZ / 10)
 
-#define LOGD(format,args...) printk (KERN_DEBUG "CTOMASIN --> " MODULE_NAME " " format "\n", ## args)
+#ifdef DEBUG_PROXIMITY
+#	define LOGD(format,args...) printk (KERN_DEBUG "CTOMASIN --> " MODULE_NAME " " format "\n", ## args)
+#else
+#	define LOGD(format,args...)
+#endif
+
 #define LOGE(format,args...) printk (KERN_ERR "CTOMASIN --> " MODULE_NAME " " format "\n", ## args)
 
 struct hcsr04_data {
@@ -57,6 +62,7 @@ struct hcsr04_data {
 	struct pinctrl         *p;          // < reference to pinctrl device
 	struct pinctrl_state   *s;          // < the selected state of the pinctrl device
 	struct cdev             cdev;       // < character device linked to the actual platform device
+	struct device          *dev;        // < the device to add to sysfs
 	int                     irq;
 	struct delayed_work     begin_dwork;
 //	struct work_struct      end_work;
@@ -68,9 +74,9 @@ struct hcsr04_data {
 
 #define MAX_DEVICES_NUM 10
 
-dev_t                          dev_num;  // < the device MAJOR,MINOR next number
+dev_t dev_num;  // < the device MAJOR,MINOR next number
 struct hcsr04_data *platform_devices_data[MAX_DEVICES_NUM] = { 0 }; // < mapping between chardev minor number and platform device
-
+struct class *proximity_class;
 
 /* typedef irqreturn_t (*irq_handler_t)(int, void *); */
 static irqreturn_t hcsr04_echo_interrupt(int irq, void *dev_id) {
@@ -314,13 +320,22 @@ static int hcsr04_device_probe(struct platform_device *pdev)
 	}
 
 	cdev_init(&pdata->cdev,&file_ops);
-	pdata->cdev.owner = THIS_MODULE;
-
 	
+	// TODO: devo aggiungere il device a sysfs, altrimenti udev non mi puù creare
+	// in automatico il file in devfs!!!
+	/*
+	kobject_set_name(&pdata->cdev.kobj, "proximity%d", MINOR(dev_num));
+	pdata->cdev.kobj.parent = &pdata->pdev->dev.kobj.parent;
+	pdata->cdev.owner = THIS_MODULE;
+	*/
+
 	if (IS_ERR_VALUE(rc = cdev_add(&pdata->cdev,dev_num,1))) {
 		LOGE("can't add the character device, aborting");
 		return rc;
 	}
+
+	pdata->dev = device_create(proximity_class,&pdata->pdev->dev,pdata->cdev.dev,
+			pdata,"proximity%d",MINOR(pdata->cdev.dev));
 
 	LOGD("created new char device: major: %i, minor: %i",MAJOR(dev_num),MINOR(dev_num));
 	platform_devices_data[MINOR(dev_num)] = pdata;
@@ -387,12 +402,12 @@ static int __init hcsr04_module_init(void)
 	}
 	dev_num = devn;
 
-//	pclass = class_create(THIS_MODULE,CLASS_NAME);
-//	if(IS_ERR(pclass)) {
-//
-//		LOGE("cannot create device class");
-//		return PTR_ERR(pclass);
-//	}
+	proximity_class = class_create(THIS_MODULE, CLASS_NAME);
+	if(IS_ERR(proximity_class)) {
+
+		LOGE("cannot create sysfs device class");
+		return PTR_ERR(proximity_class);
+	}
 
 	return platform_driver_register(&hcsr04_platform_driver);
 }
@@ -411,6 +426,8 @@ static void __exit hcsr04_module_exit(void)
 			break;
 
 		cdev_del(&pdata->cdev);
+		device_unregister(pdata->dev);
+		platform_device_unregister(pdata->pdev);
 		platform_devices_data[i] = 0;
 	}
 	platform_driver_unregister(&hcsr04_platform_driver);

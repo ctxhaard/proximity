@@ -87,7 +87,7 @@ static irqreturn_t hcsr04_echo_interrupt(int irq, void *dev_id) {
 
 	if (gpiod_get_value(pdata->echo)/* rising */) {
 		pdata->echo_start_t = ktime_get();
-		printk(KERN_DEBUG "rising\n");
+		//printk(KERN_DEBUG "rising\n");
 		
 	} else if (!gpiod_get_value(pdata->echo)/* falling */) {
 		echo_end_t = ktime_get();
@@ -100,7 +100,7 @@ static irqreturn_t hcsr04_echo_interrupt(int irq, void *dev_id) {
 			strcat(pdata->out_buffer,"\n");		
 			complete(&pdata->read_done);
 
-			LOGD("delta t (usec): %li",delta_t_us);
+			//LOGD("delta t (usec): %li",delta_t_us);
 			
 			// TODO: resettare pdata->echo_start_t
 		}
@@ -120,18 +120,18 @@ static struct hcsr04_data *hcsr04_platform_data_minor(int minor) {
 
 void hcsr04_trigger_pulse(struct gpio_desc *trigger) {
 
-	printk(KERN_DEBUG "p");
+	//printk(KERN_DEBUG "p");
 	gpiod_set_value(trigger,1);
 	usleep_range(10,15);
 	gpiod_set_value(trigger,0);
-	printk(KERN_DEBUG "**p\n");
+	//printk(KERN_DEBUG "**p\n");
 }
 
 void hcsr04_sample_work(struct work_struct *work) {
 	struct hcsr04_data *pdata;
 	struct delayed_work *dwork;
 
-	printk(KERN_DEBUG "begin\n");
+	//printk(KERN_DEBUG "begin\n");
 
 	dwork = container_of(work,struct delayed_work,work);
 	pdata = container_of(dwork,struct hcsr04_data,begin_dwork);
@@ -431,7 +431,7 @@ static void __exit hcsr04_module_exit(void)
 		platform_devices_data[i] = 0;
 	}
 	platform_driver_unregister(&hcsr04_platform_driver);
-//	class_destroy(pclass);
+	class_destroy(proximity_class);
 	first = MKDEV( MAJOR(dev_num), 0 );
 	unregister_chrdev_region(first,MAX_DEVICES_NUM);
 }

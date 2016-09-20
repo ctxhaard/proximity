@@ -45,6 +45,8 @@
 
 #define SAMPLING_INTERVAL_JIFFIES (HZ / 10)
 
+#define DEBUG_PROXIMITY
+
 #ifdef DEBUG_PROXIMITY
 #	define LOGD(format,args...) printk (KERN_DEBUG "CTOMASIN --> " MODULE_NAME " " format "\n", ## args)
 #else

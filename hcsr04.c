@@ -357,7 +357,7 @@ static int hcsr04_device_remove(struct platform_device *pdev)
 	//struct hcsr04_data *pdata;
 
 	LOGD("device removed");
-	
+
 	// NOTE: sembra che sia già stato liberato automaticamente
 	//free_irq(pdata->irq,0);
 

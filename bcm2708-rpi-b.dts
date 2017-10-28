@@ -1,5 +1,18 @@
 /dts-v1/;
 
+#define KEY_UP       103
+#define KEY_DOWN     104
+#define KEY_RIGHT    106
+#define KEY_LEFT     105
+
+#define GPIO_UP        4
+#define GPIO_DOWN      17
+#define GPIO_RIGHT     27
+#define GPIO_LEFT      22
+
+//#define HAS_PROXIMITY_SENSOR
+#define HAS_RADIO_BUTTONS
+
 #include "bcm2708.dtsi"
 
 / {
@@ -43,11 +56,21 @@
 		brcm,function = <4>;
 	};
 	
-       hcsr04_pins: hcsr04_pins {
-               brcm,pins =    <23 24>;   // trigger, echo
-               brcm,function = <1 0>;    // out,  in
-               brcm,pull =     <0 0>;      // none
-       };
+#ifdef HAS_PROXIMITY_SENSOR	
+	hcsr04_pins: hcsr04_pins {
+	       brcm,pins =    <23 24>;   // trigger, echo
+	       brcm,function = <1 0>;    // out,  in
+	       brcm,pull =     <0 0>;      // none
+	};
+#endif 
+
+#ifdef HAS_RADIO_BUTTONS
+	radio_pins: radio_pins {
+	       brcm,pins =    <GPIO_UP GPIO_DOWN GPIO_RIGHT GPIO_LEFT>;
+	       brcm,function = <0>;    // in
+	       brcm,pull =     <2>;    // pull-up
+	};
+#endif
 
 };
 
@@ -59,6 +82,7 @@
 };
 
 &soc {
+#ifdef HAS_PROXIMITY_SENSOR
        hcsr04: hcsr04 {
                compatible = "hcsr04";
                pinctrl-names = "default";
@@ -68,6 +92,43 @@
                                  <&gpio 24 0>; // echo
                status="okay";
        };
+#endif
+
+#ifdef HAS_RADIO_BUTTONS
+		gpio-keys {
+			compatible = "gpio-keys";
+			autorepeat;
+
+           pinctrl-names = "default";
+           pinctrl-0 = <&radio_pins>;
+
+			audio-up {
+				label = "GPIO Audio Up";
+				linux,code = <KEY_UP>;
+				gpios = <&gpio GPIO_UP 0>;
+			};
+
+			audio-down {
+				label = "GPIO Audio Down";
+				linux,code = <KEY_DOWN>;
+				gpios = <&gpio GPIO_DOWN 0>;
+			};
+
+			channel-up {
+				label = "GPIO Channel Up";
+				linux,code = <KEY_RIGHT>;
+				gpios = <&gpio GPIO_RIGHT 0>;
+			};
+
+			channel-down {
+				label = "GPIO Channel Down";
+				linux,code = <KEY_LEFT>;
+				gpios = <&gpio GPIO_LEFT 0>;
+			};
+
+		};
+#endif
+
 };
 
 &fb {
@@ -117,13 +178,8 @@
 };
 
 &i2s {
-	#sound-dai-cells = <0>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2s_pins>;
-};
-
-&random {
-	status = "okay";
 };
 
 &leds {
@@ -146,7 +202,6 @@
 / {
 	__overrides__ {
 		uart0 = <&uart0>,"status";
-		uart0_clkrate = <&clk_uart0>,"clock-frequency:0";
 		uart1 = <&uart1>,"status";
 		i2s = <&i2s>,"status";
 		spi = <&spi0>,"status";
@@ -156,7 +211,6 @@
 		i2c0_baudrate = <&i2c0>,"clock-frequency:0";
 		i2c1_baudrate = <&i2c1>,"clock-frequency:0";
 		i2c2_baudrate = <&i2c2>,"clock-frequency:0";
-		core_freq = <&clk_core>,"clock-frequency:0";
 
 		act_led_gpio = <&act_led>,"gpios:4";
 		act_led_activelow = <&act_led>,"gpios:8";

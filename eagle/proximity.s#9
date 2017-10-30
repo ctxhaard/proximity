@@ -5127,21 +5127,27 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <part name="PROX1" library="con-lstb" library_urn="urn:adsk.eagle:library:162" deviceset="MA04-1" device="" package3d_urn="urn:adsk.eagle:package:8337/1"/>
 <part name="P+2" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
 <part name="X_2" library="ngspice-simulation" library_urn="urn:adsk.eagle:library:527439" deviceset="GND" device=""/>
-<part name="PROX2" library="con-lstb" library_urn="urn:adsk.eagle:library:162" deviceset="MA04-1" device="" package3d_urn="urn:adsk.eagle:package:8337/1"/>
-<part name="PROX3" library="con-lstb" library_urn="urn:adsk.eagle:library:162" deviceset="MA04-1" device="" package3d_urn="urn:adsk.eagle:package:8337/1"/>
 <part name="P+1" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
-<part name="P+4" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
-<part name="P+5" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
 <part name="X_1" library="ngspice-simulation" library_urn="urn:adsk.eagle:library:527439" deviceset="GND" device=""/>
-<part name="X_4" library="ngspice-simulation" library_urn="urn:adsk.eagle:library:527439" deviceset="GND" device=""/>
 <part name="X_3" library="ngspice-simulation" library_urn="urn:adsk.eagle:library:527439" deviceset="GND" device=""/>
 <part name="P+3" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
 <part name="R2" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="0204/7" package3d_urn="urn:adsk.eagle:package:25945/1" value="1k"/>
 <part name="X_6" library="ngspice-simulation" library_urn="urn:adsk.eagle:library:527439" deviceset="GND" device=""/>
 <part name="R1" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="0204/7" package3d_urn="urn:adsk.eagle:package:25945/1" value="2k"/>
-<part name="X_5" library="ngspice-simulation" library_urn="urn:adsk.eagle:library:527439" deviceset="GND" device=""/>
 <part name="R3" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="0204/7" package3d_urn="urn:adsk.eagle:package:25945/1" value="2k"/>
 <part name="X_7" library="ngspice-simulation" library_urn="urn:adsk.eagle:library:527439" deviceset="GND" device=""/>
+<part name="PROX2" library="con-lstb" library_urn="urn:adsk.eagle:library:162" deviceset="MA04-1" device="" package3d_urn="urn:adsk.eagle:package:8337/1"/>
+<part name="P+4" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
+<part name="X_4" library="ngspice-simulation" library_urn="urn:adsk.eagle:library:527439" deviceset="GND" device=""/>
+<part name="R4" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="0204/7" package3d_urn="urn:adsk.eagle:package:25945/1" value="1k"/>
+<part name="X_5" library="ngspice-simulation" library_urn="urn:adsk.eagle:library:527439" deviceset="GND" device=""/>
+<part name="R5" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="0204/7" package3d_urn="urn:adsk.eagle:package:25945/1" value="2k"/>
+<part name="PROX3" library="con-lstb" library_urn="urn:adsk.eagle:library:162" deviceset="MA04-1" device="" package3d_urn="urn:adsk.eagle:package:8337/1"/>
+<part name="P+5" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
+<part name="X_8" library="ngspice-simulation" library_urn="urn:adsk.eagle:library:527439" deviceset="GND" device=""/>
+<part name="R6" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="0204/7" package3d_urn="urn:adsk.eagle:package:25945/1" value="1k"/>
+<part name="X_9" library="ngspice-simulation" library_urn="urn:adsk.eagle:library:527439" deviceset="GND" device=""/>
+<part name="R7" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="0204/7" package3d_urn="urn:adsk.eagle:package:25945/1" value="2k"/>
 </parts>
 <sheets>
 <sheet>
@@ -5149,37 +5155,35 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 </plain>
 <instances>
 <instance part="DSPL" gate="G$1" x="152.4" y="157.48" rot="R180"/>
-<instance part="RPI1" gate="G$1" x="71.12" y="121.92" rot="R180"/>
-<instance part="PROX1" gate="1" x="-30.48" y="152.4"/>
-<instance part="P+2" gate="VCC" x="96.52" y="137.16" rot="R270"/>
-<instance part="X_2" gate="G$1" x="93.98" y="132.08" rot="R90"/>
-<instance part="PROX2" gate="1" x="-30.48" y="111.76"/>
-<instance part="PROX3" gate="1" x="-30.48" y="73.66"/>
-<instance part="P+1" gate="VCC" x="-12.7" y="154.94" rot="R270"/>
-<instance part="P+4" gate="VCC" x="-12.7" y="114.3" rot="R270"/>
-<instance part="P+5" gate="VCC" x="-12.7" y="76.2" rot="R270"/>
-<instance part="X_1" gate="G$1" x="-7.62" y="132.08"/>
-<instance part="X_4" gate="G$1" x="-15.24" y="106.68" rot="R90"/>
+<instance part="RPI1" gate="G$1" x="76.2" y="134.62" rot="R180"/>
+<instance part="PROX1" gate="1" x="-33.02" y="177.8"/>
+<instance part="P+2" gate="VCC" x="99.06" y="149.86" rot="R270"/>
+<instance part="X_2" gate="G$1" x="96.52" y="144.78" rot="R90"/>
+<instance part="P+1" gate="VCC" x="-15.24" y="180.34" rot="R270"/>
+<instance part="X_1" gate="G$1" x="-10.16" y="157.48"/>
 <instance part="X_3" gate="G$1" x="137.16" y="175.26" rot="R180"/>
 <instance part="P+3" gate="VCC" x="137.16" y="170.18" rot="R180"/>
-<instance part="R2" gate="G$1" x="2.54" y="149.86" rot="R180"/>
-<instance part="X_6" gate="G$1" x="-15.24" y="147.32" rot="R90"/>
-<instance part="R1" gate="G$1" x="-7.62" y="142.24" rot="R270"/>
-<instance part="X_5" gate="G$1" x="-15.24" y="68.58" rot="R90"/>
+<instance part="R2" gate="G$1" x="0" y="175.26" rot="R180"/>
+<instance part="X_6" gate="G$1" x="-17.78" y="172.72" rot="R90"/>
+<instance part="R1" gate="G$1" x="-10.16" y="167.64" rot="R270"/>
 <instance part="R3" gate="G$1" x="119.38" y="165.1"/>
 <instance part="X_7" gate="G$1" x="106.68" y="165.1" rot="R270"/>
+<instance part="PROX2" gate="1" x="-33.02" y="139.7"/>
+<instance part="P+4" gate="VCC" x="-15.24" y="142.24" rot="R270"/>
+<instance part="X_4" gate="G$1" x="-10.16" y="119.38"/>
+<instance part="R4" gate="G$1" x="0" y="137.16" rot="R180"/>
+<instance part="X_5" gate="G$1" x="-17.78" y="134.62" rot="R90"/>
+<instance part="R5" gate="G$1" x="-10.16" y="129.54" rot="R270"/>
+<instance part="PROX3" gate="1" x="-33.02" y="101.6"/>
+<instance part="P+5" gate="VCC" x="-15.24" y="104.14" rot="R270"/>
+<instance part="X_8" gate="G$1" x="-10.16" y="81.28"/>
+<instance part="R6" gate="G$1" x="0" y="99.06" rot="R180"/>
+<instance part="X_9" gate="G$1" x="-17.78" y="96.52" rot="R90"/>
+<instance part="R7" gate="G$1" x="-10.16" y="91.44" rot="R270"/>
 </instances>
 <busses>
 </busses>
 <nets>
-<net name="DSPL_RS" class="0">
-<segment>
-<pinref part="DSPL" gate="G$1" pin="6"/>
-<wire x1="147.32" y1="167.64" x2="137.16" y2="167.64" width="0.1524" layer="91"/>
-<wire x1="134.62" y1="167.64" x2="137.16" y2="167.64" width="0.1524" layer="91"/>
-<label x="124.46" y="167.64" size="1.778" layer="95"/>
-</segment>
-</net>
 <net name="DISPL_RW" class="0">
 <segment>
 <pinref part="DSPL" gate="G$1" pin="7"/>
@@ -5197,8 +5201,8 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 </segment>
 <segment>
 <pinref part="RPI1" gate="G$1" pin="18"/>
-<wire x1="78.74" y1="116.84" x2="91.44" y2="116.84" width="0.1524" layer="91"/>
-<label x="91.44" y="116.84" size="1.778" layer="95"/>
+<wire x1="83.82" y1="129.54" x2="93.98" y2="129.54" width="0.1524" layer="91"/>
+<label x="93.98" y="129.54" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="DISPL_DB4" class="0">
@@ -5209,8 +5213,8 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 </segment>
 <segment>
 <pinref part="RPI1" gate="G$1" pin="19"/>
-<wire x1="63.5" y1="114.3" x2="55.88" y2="114.3" width="0.1524" layer="91"/>
-<label x="43.18" y="114.3" size="1.778" layer="95"/>
+<wire x1="68.58" y1="127" x2="58.42" y2="127" width="0.1524" layer="91"/>
+<label x="45.72" y="127" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="DISPL_DB5" class="0">
@@ -5221,8 +5225,8 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 </segment>
 <segment>
 <pinref part="RPI1" gate="G$1" pin="21"/>
-<wire x1="63.5" y1="111.76" x2="55.88" y2="111.76" width="0.1524" layer="91"/>
-<label x="43.18" y="111.76" size="1.778" layer="95"/>
+<wire x1="68.58" y1="124.46" x2="58.42" y2="124.46" width="0.1524" layer="91"/>
+<label x="45.72" y="124.46" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="DISPL_DB6" class="0">
@@ -5233,8 +5237,8 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 </segment>
 <segment>
 <pinref part="RPI1" gate="G$1" pin="23"/>
-<wire x1="63.5" y1="109.22" x2="55.88" y2="109.22" width="0.1524" layer="91"/>
-<label x="43.18" y="109.22" size="1.778" layer="95"/>
+<wire x1="68.58" y1="121.92" x2="58.42" y2="121.92" width="0.1524" layer="91"/>
+<label x="45.72" y="121.92" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="DISPL_DB7" class="0">
@@ -5245,35 +5249,22 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 </segment>
 <segment>
 <pinref part="RPI1" gate="G$1" pin="22"/>
-<wire x1="78.74" y1="111.76" x2="91.44" y2="111.76" width="0.1524" layer="91"/>
-<label x="91.44" y="111.76" size="1.778" layer="95"/>
+<wire x1="83.82" y1="124.46" x2="93.98" y2="124.46" width="0.1524" layer="91"/>
+<label x="93.98" y="124.46" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="VCC" class="0">
 <segment>
 <pinref part="RPI1" gate="G$1" pin="2"/>
-<wire x1="78.74" y1="137.16" x2="93.98" y2="137.16" width="0.1524" layer="91"/>
+<wire x1="83.82" y1="149.86" x2="96.52" y2="149.86" width="0.1524" layer="91"/>
 <pinref part="P+2" gate="VCC" pin="VCC"/>
-<junction x="93.98" y="137.16"/>
+<junction x="96.52" y="149.86"/>
 </segment>
 <segment>
 <pinref part="PROX1" gate="1" pin="4"/>
-<wire x1="-22.86" y1="154.94" x2="-15.24" y2="154.94" width="0.1524" layer="91"/>
+<wire x1="-25.4" y1="180.34" x2="-17.78" y2="180.34" width="0.1524" layer="91"/>
 <pinref part="P+1" gate="VCC" pin="VCC"/>
-<junction x="-15.24" y="154.94"/>
-</segment>
-<segment>
-<pinref part="PROX2" gate="1" pin="4"/>
-<wire x1="-22.86" y1="114.3" x2="-15.24" y2="114.3" width="0.1524" layer="91"/>
-<wire x1="-33.02" y1="114.3" x2="-22.86" y2="114.3" width="0.1524" layer="91"/>
-<pinref part="P+4" gate="VCC" pin="VCC"/>
-<junction x="-15.24" y="114.3"/>
-</segment>
-<segment>
-<pinref part="PROX3" gate="1" pin="4"/>
-<wire x1="-22.86" y1="76.2" x2="-15.24" y2="76.2" width="0.1524" layer="91"/>
-<pinref part="P+5" gate="VCC" pin="VCC"/>
-<junction x="-15.24" y="76.2"/>
+<junction x="-17.78" y="180.34"/>
 </segment>
 <segment>
 <pinref part="DSPL" gate="G$1" pin="4"/>
@@ -5281,19 +5272,25 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <pinref part="P+3" gate="VCC" pin="VCC"/>
 <junction x="137.16" y="172.72"/>
 </segment>
+<segment>
+<pinref part="PROX2" gate="1" pin="4"/>
+<wire x1="-25.4" y1="142.24" x2="-17.78" y2="142.24" width="0.1524" layer="91"/>
+<pinref part="P+4" gate="VCC" pin="VCC"/>
+<junction x="-17.78" y="142.24"/>
+</segment>
+<segment>
+<pinref part="PROX3" gate="1" pin="4"/>
+<wire x1="-25.4" y1="104.14" x2="-17.78" y2="104.14" width="0.1524" layer="91"/>
+<pinref part="P+5" gate="VCC" pin="VCC"/>
+<junction x="-17.78" y="104.14"/>
+</segment>
 </net>
 <net name="0" class="0">
 <segment>
 <pinref part="RPI1" gate="G$1" pin="6"/>
-<wire x1="78.74" y1="132.08" x2="93.98" y2="132.08" width="0.1524" layer="91"/>
+<wire x1="83.82" y1="144.78" x2="96.52" y2="144.78" width="0.1524" layer="91"/>
 <pinref part="X_2" gate="G$1" pin="0"/>
-<junction x="93.98" y="132.08"/>
-</segment>
-<segment>
-<pinref part="PROX2" gate="1" pin="1"/>
-<wire x1="-22.86" y1="106.68" x2="-15.24" y2="106.68" width="0.1524" layer="91"/>
-<pinref part="X_4" gate="G$1" pin="0"/>
-<junction x="-15.24" y="106.68"/>
+<junction x="96.52" y="144.78"/>
 </segment>
 <segment>
 <pinref part="DSPL" gate="G$1" pin="3"/>
@@ -5304,91 +5301,155 @@ Source: http://www.mouser.com/ds/2/392/products_18-2245.pdf</description>
 <segment>
 <pinref part="X_1" gate="G$1" pin="0"/>
 <pinref part="R1" gate="G$1" pin="2"/>
-<wire x1="-7.62" y1="132.08" x2="-7.62" y2="137.16" width="0.1524" layer="91"/>
+<wire x1="-10.16" y1="157.48" x2="-10.16" y2="162.56" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="PROX1" gate="1" pin="1"/>
-<wire x1="-22.86" y1="147.32" x2="-15.24" y2="147.32" width="0.1524" layer="91"/>
+<wire x1="-25.4" y1="172.72" x2="-17.78" y2="172.72" width="0.1524" layer="91"/>
 <pinref part="X_6" gate="G$1" pin="0"/>
-</segment>
-<segment>
-<pinref part="PROX3" gate="1" pin="1"/>
-<wire x1="-22.86" y1="68.58" x2="-15.24" y2="68.58" width="0.1524" layer="91"/>
-<pinref part="X_5" gate="G$1" pin="0"/>
 </segment>
 <segment>
 <pinref part="R3" gate="G$1" pin="1"/>
 <pinref part="X_7" gate="G$1" pin="0"/>
 <wire x1="106.68" y1="165.1" x2="114.3" y2="165.1" width="0.1524" layer="91"/>
 </segment>
+<segment>
+<pinref part="X_4" gate="G$1" pin="0"/>
+<pinref part="R5" gate="G$1" pin="2"/>
+<wire x1="-10.16" y1="119.38" x2="-10.16" y2="124.46" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="PROX2" gate="1" pin="1"/>
+<wire x1="-25.4" y1="134.62" x2="-17.78" y2="134.62" width="0.1524" layer="91"/>
+<pinref part="X_5" gate="G$1" pin="0"/>
+</segment>
+<segment>
+<pinref part="X_8" gate="G$1" pin="0"/>
+<pinref part="R7" gate="G$1" pin="2"/>
+<wire x1="-10.16" y1="81.28" x2="-10.16" y2="86.36" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="PROX3" gate="1" pin="1"/>
+<wire x1="-25.4" y1="96.52" x2="-17.78" y2="96.52" width="0.1524" layer="91"/>
+<pinref part="X_9" gate="G$1" pin="0"/>
+</segment>
 </net>
 <net name="PR1_ECHO" class="0">
 <segment>
 <pinref part="R2" gate="G$1" pin="1"/>
-<wire x1="7.62" y1="149.86" x2="15.24" y2="149.86" width="0.1524" layer="91"/>
-<label x="17.78" y="149.86" size="1.778" layer="95"/>
+<wire x1="5.08" y1="175.26" x2="12.7" y2="175.26" width="0.1524" layer="91"/>
+<label x="12.7" y="175.26" size="1.778" layer="95"/>
 </segment>
 <segment>
 <pinref part="RPI1" gate="G$1" pin="13"/>
-<wire x1="63.5" y1="121.92" x2="55.88" y2="121.92" width="0.1524" layer="91"/>
-<label x="43.18" y="121.92" size="1.778" layer="95"/>
+<wire x1="68.58" y1="134.62" x2="58.42" y2="134.62" width="0.1524" layer="91"/>
+<label x="45.72" y="134.62" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="PR1_TRIGGER" class="0">
 <segment>
 <pinref part="PROX1" gate="1" pin="3"/>
-<wire x1="-22.86" y1="152.4" x2="-15.24" y2="152.4" width="0.1524" layer="91"/>
-<label x="-15.24" y="152.4" size="1.778" layer="95"/>
+<wire x1="-25.4" y1="177.8" x2="-17.78" y2="177.8" width="0.1524" layer="91"/>
+<label x="-17.78" y="177.8" size="1.778" layer="95"/>
 </segment>
 <segment>
 <pinref part="RPI1" gate="G$1" pin="11"/>
-<wire x1="63.5" y1="124.46" x2="55.88" y2="124.46" width="0.1524" layer="91"/>
-<label x="43.18" y="124.46" size="1.778" layer="95"/>
-</segment>
-</net>
-<net name="PR2_ECHO" class="0">
-<segment>
-<pinref part="PROX2" gate="1" pin="2"/>
-<wire x1="-22.86" y1="109.22" x2="-15.24" y2="109.22" width="0.1524" layer="91"/>
-<label x="-15.24" y="109.22" size="1.778" layer="95"/>
-</segment>
-</net>
-<net name="PR2_TRIGGER" class="0">
-<segment>
-<pinref part="PROX2" gate="1" pin="3"/>
-<wire x1="-22.86" y1="111.76" x2="-15.24" y2="111.76" width="0.1524" layer="91"/>
-<label x="-15.24" y="111.76" size="1.778" layer="95"/>
-</segment>
-</net>
-<net name="PR3_ECHO" class="0">
-<segment>
-<pinref part="PROX3" gate="1" pin="2"/>
-<wire x1="-22.86" y1="71.12" x2="2.54" y2="71.12" width="0.1524" layer="91"/>
-<label x="2.54" y="71.12" size="1.778" layer="95"/>
-</segment>
-</net>
-<net name="PR3_TRIGGER" class="0">
-<segment>
-<pinref part="PROX3" gate="1" pin="3"/>
-<wire x1="-22.86" y1="73.66" x2="2.54" y2="73.66" width="0.1524" layer="91"/>
-<label x="2.54" y="73.66" size="1.778" layer="95"/>
+<wire x1="68.58" y1="137.16" x2="58.42" y2="137.16" width="0.1524" layer="91"/>
+<label x="45.72" y="137.16" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="N$1" class="0">
 <segment>
 <pinref part="PROX1" gate="1" pin="2"/>
-<wire x1="-22.86" y1="149.86" x2="-7.62" y2="149.86" width="0.1524" layer="91"/>
-<junction x="-7.62" y="149.86"/>
-<wire x1="-7.62" y1="149.86" x2="-2.54" y2="149.86" width="0.1524" layer="91"/>
-<wire x1="-7.62" y1="149.86" x2="-7.62" y2="147.32" width="0.1524" layer="91"/>
+<wire x1="-25.4" y1="175.26" x2="-10.16" y2="175.26" width="0.1524" layer="91"/>
+<junction x="-10.16" y="175.26"/>
+<wire x1="-10.16" y1="175.26" x2="-5.08" y2="175.26" width="0.1524" layer="91"/>
+<wire x1="-10.16" y1="175.26" x2="-10.16" y2="172.72" width="0.1524" layer="91"/>
 <pinref part="R1" gate="G$1" pin="1"/>
+<pinref part="R2" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="DISPL_RS" class="0">
 <segment>
 <pinref part="RPI1" gate="G$1" pin="16"/>
-<wire x1="78.74" y1="119.38" x2="91.44" y2="119.38" width="0.1524" layer="91"/>
-<label x="91.44" y="119.38" size="1.778" layer="95"/>
+<wire x1="83.82" y1="132.08" x2="93.98" y2="132.08" width="0.1524" layer="91"/>
+<label x="93.98" y="132.08" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="DSPL" gate="G$1" pin="6"/>
+<wire x1="147.32" y1="167.64" x2="137.16" y2="167.64" width="0.1524" layer="91"/>
+<wire x1="134.62" y1="167.64" x2="137.16" y2="167.64" width="0.1524" layer="91"/>
+<label x="124.46" y="167.64" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="N$2" class="0">
+<segment>
+<pinref part="PROX2" gate="1" pin="2"/>
+<wire x1="-25.4" y1="137.16" x2="-10.16" y2="137.16" width="0.1524" layer="91"/>
+<junction x="-10.16" y="137.16"/>
+<wire x1="-10.16" y1="137.16" x2="-5.08" y2="137.16" width="0.1524" layer="91"/>
+<wire x1="-10.16" y1="137.16" x2="-10.16" y2="134.62" width="0.1524" layer="91"/>
+<pinref part="R5" gate="G$1" pin="1"/>
+<pinref part="R4" gate="G$1" pin="2"/>
+</segment>
+</net>
+<net name="N$3" class="0">
+<segment>
+<pinref part="PROX3" gate="1" pin="2"/>
+<wire x1="-25.4" y1="99.06" x2="-10.16" y2="99.06" width="0.1524" layer="91"/>
+<junction x="-10.16" y="99.06"/>
+<wire x1="-10.16" y1="99.06" x2="-5.08" y2="99.06" width="0.1524" layer="91"/>
+<wire x1="-10.16" y1="99.06" x2="-10.16" y2="96.52" width="0.1524" layer="91"/>
+<pinref part="R7" gate="G$1" pin="1"/>
+<pinref part="R6" gate="G$1" pin="2"/>
+</segment>
+</net>
+<net name="PR2_TRIGGER" class="0">
+<segment>
+<pinref part="PROX2" gate="1" pin="3"/>
+<wire x1="-25.4" y1="139.7" x2="-17.78" y2="139.7" width="0.1524" layer="91"/>
+<label x="-17.78" y="139.7" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="RPI1" gate="G$1" pin="3"/>
+<wire x1="68.58" y1="147.32" x2="58.42" y2="147.32" width="0.1524" layer="91"/>
+<label x="45.72" y="147.32" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="PR2_ECHO" class="0">
+<segment>
+<pinref part="R4" gate="G$1" pin="1"/>
+<wire x1="5.08" y1="137.16" x2="12.7" y2="137.16" width="0.1524" layer="91"/>
+<label x="12.7" y="137.16" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="RPI1" gate="G$1" pin="5"/>
+<wire x1="68.58" y1="144.78" x2="58.42" y2="144.78" width="0.1524" layer="91"/>
+<label x="45.72" y="144.78" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="PR3_TRIGGER" class="0">
+<segment>
+<pinref part="PROX3" gate="1" pin="3"/>
+<wire x1="-25.4" y1="101.6" x2="-17.78" y2="101.6" width="0.1524" layer="91"/>
+<label x="-17.78" y="101.6" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="RPI1" gate="G$1" pin="7"/>
+<wire x1="68.58" y1="142.24" x2="58.42" y2="142.24" width="0.1524" layer="91"/>
+<label x="45.72" y="142.24" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="PR3_ECHO" class="0">
+<segment>
+<pinref part="R6" gate="G$1" pin="1"/>
+<wire x1="5.08" y1="99.06" x2="12.7" y2="99.06" width="0.1524" layer="91"/>
+<label x="12.7" y="99.06" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="RPI1" gate="G$1" pin="15"/>
+<wire x1="68.58" y1="132.08" x2="58.42" y2="132.08" width="0.1524" layer="91"/>
+<label x="45.72" y="132.08" size="1.778" layer="95"/>
 </segment>
 </net>
 </nets>

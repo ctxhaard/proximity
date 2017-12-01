@@ -32,6 +32,7 @@
 #include <linux/fs.h>    // < file system support
 #include <asm/uaccess.h> // < copy from user
 #include <linux/cdev.h>  // < character device
+#include <linux/uaccess.h>
 #include <linux/workqueue.h>
 #include <linux/completion.h>
 #include <linux/ktime.h>
@@ -99,7 +100,7 @@ static irqreturn_t hcsr04_echo_interrupt(int irq, void *dev_id) {
 
 			memset(pdata->out_buffer,'\0',OUT_BUFFER_SIZE);
 			snprintf(pdata->out_buffer,OUT_BUFFER_SIZE,"%li",mm);
-			strcat(pdata->out_buffer,"\n");		
+//			strcat(pdata->out_buffer,"\n");
 			complete(&pdata->read_done);
 
 			//LOGD("delta t (usec): %li",delta_t_us);

@@ -43,6 +43,7 @@
 #define CLASS_NAME DEVICE_NAME
 //#define SOUND_SPEED_MS (343)
 #define OUT_BUFFER_SIZE (10)
+#define MEAS_COUNT (10)
 
 #define SAMPLING_INTERVAL_JIFFIES (HZ / 10)
 
@@ -72,7 +73,10 @@ struct hcsr04_data {
 	int                     reading;    // < is currently reading
 	ktime_t                 echo_start_t; // < echo signal risen at...
 	char                    out_buffer[OUT_BUFFER_SIZE];
-	struct completion       read_done;                  
+	struct completion       read_done;
+
+	long                    meas[MEAS_COUNT];
+	size_t                  meas_index;
 };
 
 #define MAX_DEVICES_NUM 10
@@ -85,7 +89,6 @@ struct class *proximity_class;
 static irqreturn_t hcsr04_echo_interrupt(int irq, void *dev_id) {
 	struct hcsr04_data *pdata = dev_id;
 	long delta_t_us;
-	long mm;
 	ktime_t echo_end_t;
 
 	if (gpiod_get_value(pdata->echo)/* rising */) {
@@ -95,8 +98,19 @@ static irqreturn_t hcsr04_echo_interrupt(int irq, void *dev_id) {
 	} else if (!gpiod_get_value(pdata->echo)/* falling */) {
 		echo_end_t = ktime_get();
 		if (ktime_after(echo_end_t,pdata->echo_start_t)) {
+			size_t i;
+			long mm;
+
 			delta_t_us = ktime_us_delta(echo_end_t,pdata->echo_start_t);
-			mm = delta_t_us * 10 / 58;
+			pdata->meas[pdata->meas_index] = delta_t_us * 10 / 58;
+			pdata->meas_index = ((pdata->meas_index + 1) % ARRAY_SIZE(pdata->meas));
+
+			mm = 0;
+			for(i = 0; i < ARRAY_SIZE(pdata->meas); ++i) {
+				mm += pdata->meas[i];
+			}
+
+			mm /= ARRAY_SIZE(pdata->meas);
 
 			memset(pdata->out_buffer,'\0',OUT_BUFFER_SIZE);
 			snprintf(pdata->out_buffer,OUT_BUFFER_SIZE,"%li",mm);
@@ -247,6 +261,9 @@ static int hcsr04_device_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	pdata->pdev = pdev;
+
+	memset(pdata->meas,0x00,sizeof(pdata->meas));
+	pdata->meas_index = 0;
 	
 //	INIT_WORK(&pdata->end_work,hcsr04_end_sample_work);
 	init_completion(&pdata->read_done);

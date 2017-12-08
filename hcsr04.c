@@ -69,23 +69,22 @@ struct hcsr04_data {
 	struct device          *dev;        // < the device to add to sysfs
 	int                     irq;
 	struct delayed_work     begin_dwork;
-//	struct work_struct      end_work;
 	int                     reading;    // < is currently reading
 	ktime_t                 echo_start_t; // < echo signal risen at...
 	char                    out_buffer[OUT_BUFFER_SIZE];
 	struct completion       read_done;
-
+	dev_t                   devn;
 	long                    meas[MEAS_COUNT];
 	size_t                  meas_index;
 };
 
 #define MAX_DEVICES_NUM 10
 
-dev_t dev_num;  // < the device MAJOR,MINOR next number
-struct hcsr04_data *platform_devices_data[MAX_DEVICES_NUM] = { 0 }; // < mapping between chardev minor number and platform device
+dev_t first;  // < the device MAJOR,MINOR next number
+dev_t next;
+
 struct class *proximity_class;
 
-/* typedef irqreturn_t (*irq_handler_t)(int, void *); */
 static irqreturn_t hcsr04_echo_interrupt(int irq, void *dev_id) {
 	struct hcsr04_data *pdata = dev_id;
 	long delta_t_us;
@@ -114,25 +113,13 @@ static irqreturn_t hcsr04_echo_interrupt(int irq, void *dev_id) {
 
 			memset(pdata->out_buffer,'\0',OUT_BUFFER_SIZE);
 			snprintf(pdata->out_buffer,OUT_BUFFER_SIZE,"%li",mm);
-//			strcat(pdata->out_buffer,"\n");
 			complete(&pdata->read_done);
 
-			//LOGD("delta t (usec): %li",delta_t_us);
-			
 			// TODO: resettare pdata->echo_start_t
 		}
 		pdata->echo_start_t = ktime_set(KTIME_SEC_MAX,0);
-		//LOGD("distance (mm): %li",mm);
-
 	}
 	return IRQ_HANDLED;
-}
-
-static struct hcsr04_data *hcsr04_platform_data_minor(int minor) {
-	if ( minor < MAX_DEVICES_NUM ) {
-		return platform_devices_data[minor];
-	}
-	return (struct hcsr04_data *)0;
 }
 
 void hcsr04_trigger_pulse(struct gpio_desc *trigger) {
@@ -163,18 +150,14 @@ void hcsr04_sample_work(struct work_struct *work) {
 	}
 }
 
-static const  struct of_device_id of_hcsr04_match[] = {
-		{ .compatible = "hcsr04" },
-		{},
-};
 
+int hcsr04_file_open (struct inode *inode, struct file *filp) {
 
-int hcsr04_file_open (struct inode *inode, struct file *filep) {
-	int minor = iminor(inode);
-	struct hcsr04_data *pdata;
+	struct hcsr04_data *pdata; /* device information */
+	pdata = container_of(inode->i_cdev, struct hcsr04_data, cdev);
 
-	LOGD("file open");
-	pdata = hcsr04_platform_data_minor(minor);
+	filp->private_data = pdata; /* for other methods */
+
 	if(pdata) {
 		pdata->reading = 1;
 		INIT_DELAYED_WORK(&pdata->begin_dwork,hcsr04_sample_work);
@@ -186,26 +169,25 @@ int hcsr04_file_open (struct inode *inode, struct file *filep) {
 	return -ENODEV;
 }
 
-int hcsr04_file_release (struct inode *inode, struct file *filep) {
-	int minor = iminor(inode);
-	struct hcsr04_data *pdata;
+int hcsr04_file_release (struct inode *inode, struct file *filp) {
+
+	struct hcsr04_data *pdata; /* device information */
+	pdata = filp->private_data;
 
 	LOGD("file release");
-	pdata = hcsr04_platform_data_minor(minor);
 	if(pdata) {
 		pdata->reading = 0;
 	}
 	return 0;
 }
 
-ssize_t hcsr04_file_read (struct file *filep, char __user *buffer, size_t count, loff_t *off) {
+ssize_t hcsr04_file_read (struct file *filp, char __user *buffer, size_t count, loff_t *off) {
 
-	int minor = iminor(filep->f_inode);
-	struct hcsr04_data *pdata;
+	struct hcsr04_data *pdata; /* device information */
 	ssize_t len = 0;
 
+	pdata = filp->private_data;
 	LOGD("file read");
-	pdata = hcsr04_platform_data_minor(minor);
 	
 	if(pdata) {
 		wait_for_completion(&pdata->read_done);
@@ -241,16 +223,19 @@ static struct file_operations file_ops = {
 		.llseek = hcsr04_file_llseek,
 };
 
+static const  struct of_device_id of_hcsr04_match[] = {
+		{ .compatible = "hcsr04" },
+		{},
+};
+
 MODULE_DEVICE_TABLE(of,of_hcsr04_match);
 
 static int hcsr04_device_probe(struct platform_device *pdev)
 {
-	int res = -1;
+	int retval = -1;
 	int rc;
 
 	struct hcsr04_data *pdata;
-//	int echo_val, counter;
-	int min_next;
 
 	LOGD("probing called for device [%s]",pdev->name);
 
@@ -265,41 +250,45 @@ static int hcsr04_device_probe(struct platform_device *pdev)
 	memset(pdata->meas,0x00,sizeof(pdata->meas));
 	pdata->meas_index = 0;
 	
-//	INIT_WORK(&pdata->end_work,hcsr04_end_sample_work);
 	init_completion(&pdata->read_done);
 
 	pdata->p = devm_pinctrl_get(&pdev->dev);
 	if (IS_ERR(pdata->p)) {
 		LOGE("can't get pinctrl handle");
-		return PTR_ERR(pdata->p);
+		retval = PTR_ERR(pdata->p);
+		goto err_probe;
 	}
 
 	pdata->s = pinctrl_lookup_state(pdata->p,PINCTRL_STATE_DEFAULT);
 	if (IS_ERR(pdata->s)) {
 		LOGE("can't get pinctrl selected state");
-		return PTR_ERR(pdata->s);
+		retval = PTR_ERR(pdata->s);
+		goto err_probe;
 	}
 
 	if (pinctrl_select_state(pdata->p,pdata->s) < 0) {
 		LOGE("can't select pinctrl default state");
-		return res;
+		goto err_probe;	
 	}
 
 	if ( IS_ERR(pdata->trigger = devm_gpiod_get_index(&pdev->dev,"proximity",0,0)) ) {
 
 		LOGE("can't get the TRIGGER gpio descriptor, aborting");
-		return -ENODEV;
+		retval = -ENODEV;
+		goto err_probe;
 	}
 
 	// ricerca del descrittore del GPIO (effettuarla per ECHO e TRIGGER)
 	if ( IS_ERR(pdata->echo = devm_gpiod_get_index(&pdev->dev,"proximity",1,0)) ) {
 		LOGE("can't get the ECHO gpio descriptor, aborting");
-		return -ENODEV;
+		retval = -ENODEV;
+		goto err_probe;
 	}
 
 	if (0 != gpiod_get_value(pdata->echo)) {
 		LOGE("ECHO is HIGH; it should be low, aborting");
-		return -EBUSY;
+		retval = -EBUSY;
+		goto err_probe;
 	}
 
 	// TODO: eventualmente accendere il sensore
@@ -331,56 +320,56 @@ static int hcsr04_device_probe(struct platform_device *pdev)
 	pdata->irq = gpiod_to_irq(pdata->echo);
 	if (IS_ERR_VALUE(pdata->irq)) {
 		LOGE("can't get the echo irq");
-		return res;
+		goto err_probe;
 	}
 	if (IS_ERR_VALUE(request_irq(pdata->irq,hcsr04_echo_interrupt,
 		IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,"proximity",pdata))) {
 		LOGE("can't request echo irq for rising/falling detection");
-		return res;
+		goto err_probe;
 	}
 
-	cdev_init(&pdata->cdev,&file_ops);
-	
-	// TODO: devo aggiungere il device a sysfs, altrimenti udev non mi puù creare
-	// in automatico il file in devfs!!!
-	/*
-	kobject_set_name(&pdata->cdev.kobj, "proximity%d", MINOR(dev_num));
-	pdata->cdev.kobj.parent = &pdata->pdev->dev.kobj.parent;
-	pdata->cdev.owner = THIS_MODULE;
-	*/
+	pdata->devn = next;
+	next = MKDEV(MAJOR(next), MINOR(next) + 1);
 
-	if (IS_ERR_VALUE(rc = cdev_add(&pdata->cdev,dev_num,1))) {
+	if (NULL == device_create(proximity_class, NULL, pdata->devn, NULL, "proximity%d", MINOR(pdata->devn))) {
+		retval = -EIO;
+		goto err_probe;
+	}
+	
+
+	cdev_init(&pdata->cdev,&file_ops);
+	pdata->cdev.owner = THIS_MODULE;
+	pdata->cdev.ops = &file_ops;
+
+	if (IS_ERR_VALUE(rc = cdev_add(&pdata->cdev, pdata->devn, 1))) {
 		LOGE("can't add the character device, aborting");
 		return rc;
 	}
 
-	pdata->dev = device_create(proximity_class,&pdata->pdev->dev,pdata->cdev.dev,
-			pdata,"proximity%d",MINOR(pdata->cdev.dev));
+	dev_info(&pdev->dev,"major: %d minor: %d\n",MAJOR(pdata->devn), MINOR(pdata->devn));
 
-	LOGD("created new char device: major: %i, minor: %i",MAJOR(dev_num),MINOR(dev_num));
-	platform_devices_data[MINOR(dev_num)] = pdata;
+	retval = 0;
 
-	min_next = (MINOR(dev_num) + 1);
-	dev_num = MKDEV( MAJOR(dev_num), min_next );
-	
-	res = 0;
-	//LOGD("echo signal acquired: proximity sensor is connected!");
-
-
-	return res;
+err_probe:
+	return retval;
 }
 
 static int hcsr04_device_remove(struct platform_device *pdev)
 {
-	//struct hcsr04_data *pdata;
+	struct hcsr04_data *pdata;
 
 	LOGD("device removed");
 
-	// NOTE: sembra che sia già stato liberato automaticamente
-	//free_irq(pdata->irq,0);
+	pdata = (struct hcsr04_data *)dev_get_drvdata(&pdev->dev);
+	free_irq(pdata->irq,0);
+	pdata->reading = 0;
 
-	//pdata = container_of(&pdev,struct hcsr04_data,pdev);
-	//cdev_del(&pdata->cdev);
+	cancel_delayed_work_sync(&pdata->begin_dwork);
+	if (proximity_class)
+		device_destroy(proximity_class, pdata->devn);
+
+
+	cdev_del(&pdata->cdev);
 	
 	// TODO: eventualmente spegnere il sensore
 	return 0;
@@ -420,7 +409,8 @@ static int __init hcsr04_module_init(void)
 		LOGE("failed to alloc the chardev region");
 		return rc;
 	}
-	dev_num = devn;
+	first = devn;
+	next = first;
 
 	proximity_class = class_create(THIS_MODULE, CLASS_NAME);
 	if(IS_ERR(proximity_class)) {
@@ -434,25 +424,11 @@ static int __init hcsr04_module_init(void)
 
 static void __exit hcsr04_module_exit(void)
 {
-	int i = 0;
-	dev_t first;
-	
 	LOGD("module exit");
 
-	for (;i < MAX_DEVICES_NUM; ++i) {
-
-		struct hcsr04_data *pdata = platform_devices_data[i];
-		if(!pdata)
-			break;
-
-		cdev_del(&pdata->cdev);
-		device_unregister(pdata->dev);
-		platform_device_unregister(pdata->pdev);
-		platform_devices_data[i] = 0;
-	}
 	platform_driver_unregister(&hcsr04_platform_driver);
-	class_destroy(proximity_class);
-	first = MKDEV( MAJOR(dev_num), 0 );
+	if (proximity_class)
+		class_destroy(proximity_class);
 	unregister_chrdev_region(first,MAX_DEVICES_NUM);
 }
 

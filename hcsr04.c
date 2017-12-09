@@ -20,6 +20,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+#define DEBUG
 
 #include <linux/module.h>
 #include <linux/gpio/consumer.h>
@@ -47,16 +48,6 @@
 
 #define SAMPLING_INTERVAL_JIFFIES (HZ / 10)
 
-#define DEBUG_PROXIMITY
-
-#ifdef DEBUG_PROXIMITY
-#	define LOGD(format,args...) printk (KERN_DEBUG "CTOMASIN --> " MODULE_NAME " " format "\n", ## args)
-#else
-#	define LOGD(format,args...)
-#endif
-
-#define LOGE(format,args...) printk (KERN_ERR "CTOMASIN --> " MODULE_NAME " " format "\n", ## args)
-
 struct hcsr04_data {
 	struct platform_device *pdev;       // < the platform device
 	struct gpio_desc       *trigger;    // < the trigger pin
@@ -66,7 +57,6 @@ struct hcsr04_data {
 	struct pinctrl         *p;          // < reference to pinctrl device
 	struct pinctrl_state   *s;          // < the selected state of the pinctrl device
 	struct cdev             cdev;       // < character device linked to the actual platform device
-	struct device          *dev;        // < the device to add to sysfs
 	int                     irq;
 	struct delayed_work     begin_dwork;
 	int                     reading;    // < is currently reading
@@ -141,12 +131,14 @@ void hcsr04_sample_work(struct work_struct *work) {
 	pdata = container_of(dwork,struct hcsr04_data,begin_dwork);
 
 	hcsr04_trigger_pulse(pdata->trigger);
+
+
 	// re-schedule the read operation
 	if (pdata->reading) {
 		INIT_DELAYED_WORK(&pdata->begin_dwork,hcsr04_sample_work); // serve???
 		schedule_delayed_work(&pdata->begin_dwork,SAMPLING_INTERVAL_JIFFIES);
 	} else {
-		printk(KERN_DEBUG "reading stopped\n");
+		dev_dbg(&pdata->pdev->dev, "reading stopped\n");
 	}
 }
 
@@ -158,14 +150,19 @@ int hcsr04_file_open (struct inode *inode, struct file *filp) {
 
 	filp->private_data = pdata; /* for other methods */
 
-	if(pdata) {
-		pdata->reading = 1;
-		INIT_DELAYED_WORK(&pdata->begin_dwork,hcsr04_sample_work);
-		schedule_delayed_work(&pdata->begin_dwork,0);
-		LOGD("file open succeeded: scheduled immediate sensor polling");
+	pdata->reading = 1;
+	INIT_DELAYED_WORK(&pdata->begin_dwork,hcsr04_sample_work);
+	schedule_delayed_work(&pdata->begin_dwork,0);
+
+	if (IS_ERR_VALUE(request_irq(pdata->irq,hcsr04_echo_interrupt,
+		IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,"proximity", pdata))) {
+		dev_err(&pdata->pdev->dev, "can't request echo irq for rising/falling detection\n");
+		pdata->reading = 0;
+	} else {
+		dev_dbg( &pdata->pdev->dev, "file open succeeded: scheduled immediate sensor polling\n");
 		return 0;
 	}
-	LOGE("file open error");
+	dev_err( &pdata->pdev->dev, "file open error\n");
 	return -ENODEV;
 }
 
@@ -174,10 +171,10 @@ int hcsr04_file_release (struct inode *inode, struct file *filp) {
 	struct hcsr04_data *pdata; /* device information */
 	pdata = filp->private_data;
 
-	LOGD("file release");
-	if(pdata) {
-		pdata->reading = 0;
-	}
+	dev_dbg( &pdata->pdev->dev, "file release\n");
+	if (pdata->reading) free_irq(pdata->irq, pdata);
+
+	pdata->reading = 0;
 	return 0;
 }
 
@@ -187,7 +184,7 @@ ssize_t hcsr04_file_read (struct file *filp, char __user *buffer, size_t count, 
 	ssize_t len = 0;
 
 	pdata = filp->private_data;
-	LOGD("file read");
+	//dev_dbg(pdata->dev, "file read\n");
 	
 	if(pdata) {
 		wait_for_completion(&pdata->read_done);
@@ -196,20 +193,22 @@ ssize_t hcsr04_file_read (struct file *filp, char __user *buffer, size_t count, 
 		len = (len < count ? len : count);
 		if (len) {
 			if (copy_to_user(buffer,pdata->out_buffer,len)) {
-				LOGD("error copying to userspace");
+				dev_err(&pdata->pdev->dev, "error copying to userspace\n");
 				return -EFAULT;
 			}
 			memmove(pdata->out_buffer,pdata->out_buffer+len,(OUT_BUFFER_SIZE - len));
 			reinit_completion(&pdata->read_done);
 		}
 	}
-	LOGD("read %d bytes",len);
+	//dev_dbg(pdata->dev, "read %d bytes\n",len);
 	return len;
 }
 
 loff_t hcsr04_file_llseek(struct file *filp, loff_t off, int val) {
-	
-	LOGD("file llseek");
+	struct hcsr04_data *pdata;
+
+	pdata = filp->private_data;
+	dev_dbg(&pdata->pdev->dev, "file llseek\n");
 	// TODO: implementare
 	
 	return 0;
@@ -237,7 +236,7 @@ static int hcsr04_device_probe(struct platform_device *pdev)
 
 	struct hcsr04_data *pdata;
 
-	LOGD("probing called for device [%s]",pdev->name);
+	dev_dbg(&pdev->dev, "Probe\n");
 
 	// allocazione della mia struttura dati nella memoria gestita
 	// assieme al device (viene deallocata quando il device scompare)
@@ -254,39 +253,39 @@ static int hcsr04_device_probe(struct platform_device *pdev)
 
 	pdata->p = devm_pinctrl_get(&pdev->dev);
 	if (IS_ERR(pdata->p)) {
-		LOGE("can't get pinctrl handle");
+		dev_err(&pdev->dev, "can't get pinctrl handle\n");
 		retval = PTR_ERR(pdata->p);
 		goto err_probe;
 	}
 
 	pdata->s = pinctrl_lookup_state(pdata->p,PINCTRL_STATE_DEFAULT);
 	if (IS_ERR(pdata->s)) {
-		LOGE("can't get pinctrl selected state");
+		dev_err(&pdev->dev, "can't get pinctrl selected state\n");
 		retval = PTR_ERR(pdata->s);
 		goto err_probe;
 	}
 
 	if (pinctrl_select_state(pdata->p,pdata->s) < 0) {
-		LOGE("can't select pinctrl default state");
+		dev_err(&pdev->dev, "can't select pinctrl default state\n");
 		goto err_probe;	
 	}
 
 	if ( IS_ERR(pdata->trigger = devm_gpiod_get_index(&pdev->dev,"proximity",0,0)) ) {
 
-		LOGE("can't get the TRIGGER gpio descriptor, aborting");
+		dev_err(&pdev->dev, "can't get the TRIGGER gpio descriptor, aborting\n");
 		retval = -ENODEV;
 		goto err_probe;
 	}
 
 	// ricerca del descrittore del GPIO (effettuarla per ECHO e TRIGGER)
 	if ( IS_ERR(pdata->echo = devm_gpiod_get_index(&pdev->dev,"proximity",1,0)) ) {
-		LOGE("can't get the ECHO gpio descriptor, aborting");
+		dev_err(&pdev->dev, "can't get the ECHO gpio descriptor, aborting\n");
 		retval = -ENODEV;
 		goto err_probe;
 	}
 
 	if (0 != gpiod_get_value(pdata->echo)) {
-		LOGE("ECHO is HIGH; it should be low, aborting");
+		dev_err(&pdev->dev, "ECHO is HIGH; it should be low, aborting\n");
 		retval = -EBUSY;
 		goto err_probe;
 	}
@@ -319,12 +318,7 @@ static int hcsr04_device_probe(struct platform_device *pdev)
 
 	pdata->irq = gpiod_to_irq(pdata->echo);
 	if (IS_ERR_VALUE(pdata->irq)) {
-		LOGE("can't get the echo irq");
-		goto err_probe;
-	}
-	if (IS_ERR_VALUE(request_irq(pdata->irq,hcsr04_echo_interrupt,
-		IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,"proximity",pdata))) {
-		LOGE("can't request echo irq for rising/falling detection");
+		dev_err(&pdev->dev, "can't get the echo irq\n");
 		goto err_probe;
 	}
 
@@ -342,7 +336,7 @@ static int hcsr04_device_probe(struct platform_device *pdev)
 	pdata->cdev.ops = &file_ops;
 
 	if (IS_ERR_VALUE(rc = cdev_add(&pdata->cdev, pdata->devn, 1))) {
-		LOGE("can't add the character device, aborting");
+		dev_err(&pdev->dev, "can't add the character device, aborting\n");
 		return rc;
 	}
 
@@ -358,21 +352,28 @@ static int hcsr04_device_remove(struct platform_device *pdev)
 {
 	struct hcsr04_data *pdata;
 
-	LOGD("device removed");
+	dev_dbg(&pdev->dev, "device removed\n");
 
 	pdata = (struct hcsr04_data *)dev_get_drvdata(&pdev->dev);
-	free_irq(pdata->irq,0);
-	pdata->reading = 0;
+	if (pdata) {
+		pdata->reading = 0;
 
-	cancel_delayed_work_sync(&pdata->begin_dwork);
-	if (proximity_class)
-		device_destroy(proximity_class, pdata->devn);
+		cancel_delayed_work_sync(&pdata->begin_dwork);
+		if (proximity_class) {
+			device_destroy(proximity_class, pdata->devn);
+			proximity_class = NULL;
+		}
 
-
-	cdev_del(&pdata->cdev);
+		cdev_del(&pdata->cdev);
+	}
 	
 	// TODO: eventualmente spegnere il sensore
 	return 0;
+}
+
+void hcsr04_device_shutdown(struct platform_device *pdev)
+{
+	hcsr04_device_remove(pdev);
 }
 
 static const struct of_device_id hcsr04_match[] = {
@@ -395,6 +396,7 @@ static struct platform_driver hcsr04_platform_driver = {
 		},
 		.probe = hcsr04_device_probe,
 		.remove = hcsr04_device_remove,
+		.shutdown = hcsr04_device_shutdown,
 };
 
 
@@ -403,10 +405,10 @@ static int __init hcsr04_module_init(void)
 	int rc;
 	dev_t devn;
 
-	LOGD("module init");
+	printk(KERN_DEBUG "module init\n");
 
 	if(IS_ERR_VALUE(rc = alloc_chrdev_region(&devn,0,MAX_DEVICES_NUM,DEVICE_NAME))) {
-		LOGE("failed to alloc the chardev region");
+		printk(KERN_ERR "failed to alloc the chardev region\n");
 		return rc;
 	}
 	first = devn;
@@ -415,7 +417,7 @@ static int __init hcsr04_module_init(void)
 	proximity_class = class_create(THIS_MODULE, CLASS_NAME);
 	if(IS_ERR(proximity_class)) {
 
-		LOGE("cannot create sysfs device class");
+		printk(KERN_ERR "cannot create sysfs device class\n");
 		return PTR_ERR(proximity_class);
 	}
 
@@ -424,7 +426,7 @@ static int __init hcsr04_module_init(void)
 
 static void __exit hcsr04_module_exit(void)
 {
-	LOGD("module exit");
+	printk(KERN_DEBUG "module exit\n");
 
 	platform_driver_unregister(&hcsr04_platform_driver);
 	if (proximity_class)

@@ -150,18 +150,20 @@ int hcsr04_file_open (struct inode *inode, struct file *filp) {
 
 	filp->private_data = pdata; /* for other methods */
 
-	pdata->reading = 1;
-	INIT_DELAYED_WORK(&pdata->begin_dwork,hcsr04_sample_work);
-	schedule_delayed_work(&pdata->begin_dwork,0);
-
 	if (IS_ERR_VALUE(request_irq(pdata->irq,hcsr04_echo_interrupt,
 		IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,"proximity", pdata))) {
-		dev_err(&pdata->pdev->dev, "can't request echo irq for rising/falling detection\n");
-		pdata->reading = 0;
-	} else {
-		dev_dbg( &pdata->pdev->dev, "file open succeeded: scheduled immediate sensor polling\n");
-		return 0;
+		goto err_file_open;
 	}
+
+	INIT_DELAYED_WORK(&pdata->begin_dwork,hcsr04_sample_work);
+	schedule_delayed_work(&pdata->begin_dwork,0);
+	pdata->reading = 1;
+	dev_dbg( &pdata->pdev->dev, "file open succeeded: scheduled immediate sensor polling\n");
+	return 0;
+
+err_file_open:
+	dev_err(&pdata->pdev->dev, "can't request echo irq for rising/falling detection\n");
+	pdata->reading = 0;
 	dev_err( &pdata->pdev->dev, "file open error\n");
 	return -ENODEV;
 }
@@ -322,6 +324,8 @@ static int hcsr04_device_probe(struct platform_device *pdev)
 		goto err_probe;
 	}
 
+	dev_set_drvdata(&pdev->dev, pdata);
+
 	pdata->devn = next;
 	next = MKDEV(MAJOR(next), MINOR(next) + 1);
 
@@ -355,26 +359,17 @@ static int hcsr04_device_remove(struct platform_device *pdev)
 	dev_dbg(&pdev->dev, "device removed\n");
 
 	pdata = (struct hcsr04_data *)dev_get_drvdata(&pdev->dev);
-	if (pdata) {
-		pdata->reading = 0;
 
-		cancel_delayed_work_sync(&pdata->begin_dwork);
-		if (proximity_class) {
-			device_destroy(proximity_class, pdata->devn);
-			proximity_class = NULL;
-		}
-
-		cdev_del(&pdata->cdev);
+	pdata->reading = 0;
+	cancel_delayed_work_sync(&pdata->begin_dwork);
+	if (proximity_class) {
+		device_destroy(proximity_class, pdata->devn);
 	}
-	
+	cdev_del(&pdata->cdev);
 	// TODO: eventualmente spegnere il sensore
 	return 0;
 }
 
-void hcsr04_device_shutdown(struct platform_device *pdev)
-{
-	hcsr04_device_remove(pdev);
-}
 
 static const struct of_device_id hcsr04_match[] = {
 		{
@@ -396,7 +391,6 @@ static struct platform_driver hcsr04_platform_driver = {
 		},
 		.probe = hcsr04_device_probe,
 		.remove = hcsr04_device_remove,
-		.shutdown = hcsr04_device_shutdown,
 };
 
 

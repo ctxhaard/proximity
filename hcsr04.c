@@ -59,7 +59,7 @@ struct hcsr04_data {
 	struct cdev             cdev;       // < character device linked to the actual platform device
 	int                     irq;
 	struct delayed_work     begin_dwork;
-	int                     reading;    // < is currently reading
+	int                     count;      // < n. of users
 	ktime_t                 echo_start_t; // < echo signal risen at...
 	char                    out_buffer[OUT_BUFFER_SIZE];
 	struct completion       read_done;
@@ -134,7 +134,7 @@ void hcsr04_sample_work(struct work_struct *work) {
 
 
 	// re-schedule the read operation
-	if (pdata->reading) {
+	if (pdata->count) {
 		INIT_DELAYED_WORK(&pdata->begin_dwork,hcsr04_sample_work); // serve???
 		schedule_delayed_work(&pdata->begin_dwork,SAMPLING_INTERVAL_JIFFIES);
 	} else {
@@ -147,23 +147,25 @@ int hcsr04_file_open (struct inode *inode, struct file *filp) {
 
 	struct hcsr04_data *pdata; /* device information */
 	pdata = container_of(inode->i_cdev, struct hcsr04_data, cdev);
-
 	filp->private_data = pdata; /* for other methods */
 
-	if (IS_ERR_VALUE(request_irq(pdata->irq,hcsr04_echo_interrupt,
-		IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,"proximity", pdata))) {
-		goto err_file_open;
+	if (pdata->count == 0) {
+	
+		if (IS_ERR_VALUE(request_irq(pdata->irq,hcsr04_echo_interrupt,
+			IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,"proximity", pdata))) {
+			goto err_file_open;
+		}
+	
+		INIT_DELAYED_WORK(&pdata->begin_dwork,hcsr04_sample_work);
+		schedule_delayed_work(&pdata->begin_dwork,0);
+		dev_dbg( &pdata->pdev->dev, "file open succeeded: scheduled immediate sensor polling\n");
 	}
-
-	INIT_DELAYED_WORK(&pdata->begin_dwork,hcsr04_sample_work);
-	schedule_delayed_work(&pdata->begin_dwork,0);
-	pdata->reading = 1;
-	dev_dbg( &pdata->pdev->dev, "file open succeeded: scheduled immediate sensor polling\n");
+	pdata->count++;
 	return 0;
 
 err_file_open:
 	dev_err(&pdata->pdev->dev, "can't request echo irq for rising/falling detection\n");
-	pdata->reading = 0;
+	pdata->count = 0;
 	dev_err( &pdata->pdev->dev, "file open error\n");
 	return -ENODEV;
 }
@@ -173,10 +175,9 @@ int hcsr04_file_release (struct inode *inode, struct file *filp) {
 	struct hcsr04_data *pdata; /* device information */
 	pdata = filp->private_data;
 
+	pdata->count--;
 	dev_dbg( &pdata->pdev->dev, "file release\n");
-	if (pdata->reading) free_irq(pdata->irq, pdata);
-
-	pdata->reading = 0;
+	if (pdata->count == 0) free_irq(pdata->irq, pdata);
 	return 0;
 }
 
@@ -360,7 +361,7 @@ static int hcsr04_device_remove(struct platform_device *pdev)
 
 	pdata = (struct hcsr04_data *)dev_get_drvdata(&pdev->dev);
 
-	pdata->reading = 0;
+	pdata->count = 0;
 	cancel_delayed_work_sync(&pdata->begin_dwork);
 	if (proximity_class) {
 		device_destroy(proximity_class, pdata->devn);

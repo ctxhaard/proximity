@@ -81,7 +81,8 @@ static irqreturn_t hcsr04_echo_interrupt(int irq, void *dev_id) {
 	ktime_t echo_end_t;
 
 	if (gpiod_get_value(pdata->echo)/* rising */) {
-		pdata->echo_start_t = ktime_get();
+		if (ktime_compare(pdata->echo_start_t,ktime_set(KTIME_SEC_MAX,0)) == 0)
+			pdata->echo_start_t = ktime_get();
 		//printk(KERN_DEBUG "rising\n");
 		
 	} else if (!gpiod_get_value(pdata->echo)/* falling */) {
@@ -104,8 +105,6 @@ static irqreturn_t hcsr04_echo_interrupt(int irq, void *dev_id) {
 			memset(pdata->out_buffer,'\0',OUT_BUFFER_SIZE);
 			snprintf(pdata->out_buffer,OUT_BUFFER_SIZE,"%li",mm);
 			complete(&pdata->read_done);
-
-			// TODO: resettare pdata->echo_start_t
 		}
 		pdata->echo_start_t = ktime_set(KTIME_SEC_MAX,0);
 	}
@@ -150,9 +149,9 @@ int hcsr04_file_open (struct inode *inode, struct file *filp) {
 	filp->private_data = pdata; /* for other methods */
 
 	if (pdata->count == 0) {
-	
+		// NOTE: IRQ is shared beacuse the same IRQ line is shared between some gpio pins	
 		if (IS_ERR_VALUE(request_irq(pdata->irq,hcsr04_echo_interrupt,
-			IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,"proximity", pdata))) {
+			IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING | IRQF_SHARED,"proximity", pdata))) {
 			goto err_file_open;
 		}
 	
@@ -251,6 +250,7 @@ static int hcsr04_device_probe(struct platform_device *pdev)
 
 	memset(pdata->meas,0x00,sizeof(pdata->meas));
 	pdata->meas_index = 0;
+	pdata->echo_start_t = ktime_set(KTIME_SEC_MAX,0);
 	
 	init_completion(&pdata->read_done);
 

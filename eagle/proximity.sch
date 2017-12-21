@@ -5538,6 +5538,7 @@ FRAME-LETTER</description>
 <part name="JP7" library="pinhead" library_urn="urn:adsk.eagle:library:325" deviceset="PINHD-1X9" device="" package3d_urn="urn:adsk.eagle:package:22483/1"/>
 <part name="P+2" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+5V" device=""/>
 <part name="GND10" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
+<part name="GND11" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -5582,6 +5583,7 @@ FRAME-LETTER</description>
 <instance part="JP7" gate="A" x="154.94" y="106.68"/>
 <instance part="P+2" gate="1" x="124.46" y="101.6" rot="R90"/>
 <instance part="GND10" gate="1" x="124.46" y="116.84" rot="R270"/>
+<instance part="GND11" gate="1" x="139.7" y="205.74" rot="R270"/>
 </instances>
 <busses>
 </busses>
@@ -5806,6 +5808,11 @@ FRAME-LETTER</description>
 <pinref part="JP6" gate="A" pin="1"/>
 <wire x1="134.62" y1="116.84" x2="127" y2="116.84" width="0.1524" layer="91"/>
 <pinref part="GND10" gate="1" pin="GND"/>
+</segment>
+<segment>
+<pinref part="GND11" gate="1" pin="GND"/>
+<pinref part="JP2" gate="A" pin="5"/>
+<wire x1="142.24" y1="205.74" x2="180.34" y2="205.74" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="+5V" class="0">

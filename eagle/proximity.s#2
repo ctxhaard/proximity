@@ -5291,7 +5291,7 @@ FRAME-LETTER</description>
 <part name="JP2" library="pinhead" library_urn="urn:adsk.eagle:library:325" deviceset="PINHD-1X16" device="" package3d_urn="urn:adsk.eagle:package:22432/2"/>
 <part name="JP3" library="pinhead" library_urn="urn:adsk.eagle:library:325" deviceset="PINHD-1X4" device="" package3d_urn="urn:adsk.eagle:package:22407/2"/>
 <part name="GND1" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="P+6" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+5V" device=""/>
+<part name="5V" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+5V" device=""/>
 <part name="R4" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="0204/7" package3d_urn="urn:adsk.eagle:package:25945/1" value="1k"/>
 <part name="R5" library="resistor" library_urn="urn:adsk.eagle:library:348" deviceset="R-EU_" device="0204/7" package3d_urn="urn:adsk.eagle:package:25945/1" value="2k"/>
 <part name="JP4" library="pinhead" library_urn="urn:adsk.eagle:library:325" deviceset="PINHD-1X4" device="" package3d_urn="urn:adsk.eagle:package:22407/2"/>
@@ -5331,7 +5331,7 @@ FRAME-LETTER</description>
 <instance part="JP2" gate="A" x="182.88" y="198.12"/>
 <instance part="JP3" gate="A" x="-43.18" y="213.36" rot="R180"/>
 <instance part="GND1" gate="1" x="-27.94" y="208.28" rot="R90"/>
-<instance part="P+6" gate="1" x="-27.94" y="215.9" rot="R270"/>
+<instance part="5V" gate="1" x="-27.94" y="215.9" rot="R270"/>
 <instance part="R4" gate="G$1" x="-7.62" y="162.56" rot="R180"/>
 <instance part="R5" gate="G$1" x="-17.78" y="154.94" rot="R270"/>
 <instance part="JP4" gate="A" x="-45.72" y="165.1" rot="R180"/>
@@ -5573,7 +5573,7 @@ FRAME-LETTER</description>
 <net name="+5V" class="0">
 <segment>
 <pinref part="JP3" gate="A" pin="4"/>
-<pinref part="P+6" gate="1" pin="+5V"/>
+<pinref part="5V" gate="1" pin="+5V"/>
 <wire x1="-40.64" y1="215.9" x2="-30.48" y2="215.9" width="0.1524" layer="91"/>
 </segment>
 <segment>

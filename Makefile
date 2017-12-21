@@ -9,7 +9,9 @@ ARCH ?= arm
 CROSS_COMPILE ?= arm-linux-gnueabihf-
 
 default:
-	$(MAKE) -C $(KDIR) M=$$PWD ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -j8 && scp $$PWD/hcsr04.ko root@uraspi:/root/
+	$(MAKE) -C $(KDIR) M=$$PWD ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -j8 
+	
+#	&& scp $$PWD/hcsr04.ko root@uraspi:/root/
 
 # add module specific targets here
 endif

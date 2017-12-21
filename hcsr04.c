@@ -79,6 +79,9 @@ static irqreturn_t hcsr04_echo_interrupt(int irq, void *dev_id) {
 	struct hcsr04_data *pdata = dev_id;
 	long delta_t_us;
 	ktime_t echo_end_t;
+	
+	if (pdata->count == 0)
+		return IRQ_NONE;
 
 	if (gpiod_get_value(pdata->echo)/* rising */) {
 		if (ktime_compare(pdata->echo_start_t,ktime_set(KTIME_SEC_MAX,0)) == 0)

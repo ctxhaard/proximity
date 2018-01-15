@@ -23,6 +23,7 @@
 #define DEBUG
 
 #include <linux/module.h>
+#include <linux/moduleparam.h>
 #include <linux/gpio/consumer.h>
 #include <linux/pinctrl/consumer.h>
 #include <linux/platform_device.h>
@@ -44,9 +45,13 @@
 #define CLASS_NAME DEVICE_NAME
 //#define SOUND_SPEED_MS (343)
 #define OUT_BUFFER_SIZE (10)
-#define MEAS_COUNT (10)
+#define MEAS_COUNT_MAX (10)
 
 #define SAMPLING_INTERVAL_JIFFIES (HZ / 10)
+
+static int nsamples = 1;
+
+module_param(nsamples, int, S_IRUGO);
 
 struct hcsr04_data {
 	struct platform_device *pdev;       // < the platform device
@@ -64,7 +69,7 @@ struct hcsr04_data {
 	char                    out_buffer[OUT_BUFFER_SIZE];
 	struct completion       read_done;
 	dev_t                   devn;
-	long                    meas[MEAS_COUNT];
+	long                    meas[MEAS_COUNT_MAX];
 	size_t                  meas_index;
 };
 
@@ -96,17 +101,18 @@ static irqreturn_t hcsr04_echo_interrupt(int irq, void *dev_id) {
 
 			delta_t_us = ktime_us_delta(echo_end_t,pdata->echo_start_t);
 			pdata->meas[pdata->meas_index] = delta_t_us * 10 / 58;
-			pdata->meas_index = ((pdata->meas_index + 1) % ARRAY_SIZE(pdata->meas));
+			//pdata->meas_index = ((pdata->meas_index + 1) % ARRAY_SIZE(pdata->meas));
+			pdata->meas_index = ((pdata->meas_index + 1) % nsamples);
 
 			mm = 0;
-			for(i = 0; i < ARRAY_SIZE(pdata->meas); ++i) {
+			for(i = 0; i < nsamples /*i < ARRAY_SIZE(pdata->meas)*/; ++i) {
 				mm += pdata->meas[i];
 			}
 
-			mm /= ARRAY_SIZE(pdata->meas);
+			mm /= nsamples; //ARRAY_SIZE(pdata->meas);
 
 			memset(pdata->out_buffer,'\0',OUT_BUFFER_SIZE);
-			snprintf(pdata->out_buffer,OUT_BUFFER_SIZE,"%li",mm);
+			snprintf(pdata->out_buffer,OUT_BUFFER_SIZE,"%li\n",mm);
 			complete(&pdata->read_done);
 		}
 		pdata->echo_start_t = ktime_set(KTIME_SEC_MAX,0);
@@ -409,6 +415,9 @@ static int __init hcsr04_module_init(void)
 		printk(KERN_ERR "failed to alloc the chardev region\n");
 		return rc;
 	}
+
+	nsamples = (nsamples > MEAS_COUNT_MAX ? MEAS_COUNT_MAX : nsamples);
+	printk(KERN_DEBUG "averaging on %d samples\n", nsamples);
 	first = devn;
 	next = first;
 
